@@ -17,6 +17,7 @@ public class ExampleUsage {
     public static void main(String[] args) {
         ExampleUsage instance = new ExampleUsage();
         dispatcher.register(instance);
+        dispatcher.setMultiThreading(true);
         dispatcher.dispatch(new Event1(EventEra.PRE));
         dispatcher.dispatch(new Event2(EventEra.PRE));
         dispatcher.dispatch(new EventWithVariables(10, 20, 30, EventEra.PRE));

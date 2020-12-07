@@ -14,7 +14,14 @@ public final class EventDispatcher {
     /**
      * stores all registered objects and the filtered methods for them.
      */
-    private final HashMap<Object, ArrayList<Method>> listenerMap = new HashMap<>();
+    private final HashMap<Object, List<Method>> listenerMap = new HashMap<>();
+
+    /**
+     * indicates whether we'll start a new thread to dispatch the event.
+     */
+    private boolean multiThreading = false;
+    public boolean isMultithreading() { return multiThreading; }
+    public void setMultiThreading(boolean multiThreading) { this.multiThreading = multiThreading; }
 
     /**
      * looks through all the object's methods, and stores all event listeners under object in {@link EventDispatcher#listenerMap}
@@ -43,13 +50,23 @@ public final class EventDispatcher {
      * @param event the event being dispatched
      * @param <T> type of the event - better reflection checks
      */
-    public <T extends Event> void dispatch(T event) {
-        for (Map.Entry<Object, ArrayList<Method>> entry : listenerMap.entrySet()) {
+    private synchronized <T extends Event> void dispatch0(T event) {
+        for (Map.Entry<Object, List<Method>> entry : listenerMap.entrySet()) {
             for (Method m : filterArrayList(entry.getValue(), event)) {
                 invoke(m, entry.getKey(), event);
                 if (event.isCancelled()) return;
             }
         }
+    }
+
+    /**
+     * wrapper for {@link EventDispatcher#dispatch0(Event)} to consider {@link EventDispatcher#multiThreading}
+     * @param event the event being dispatched
+     * @param <T> type of the event - better reflection checks
+     */
+    public synchronized <T extends Event> void dispatch(T event) {
+        if (multiThreading) new Thread(() -> dispatch0(event)).start();
+        else dispatch0(event);
     }
 
     private void invoke(Method m, Object caller, Object... args) {
@@ -61,13 +78,13 @@ public final class EventDispatcher {
     }
 
     /**
-     * @param arrayList the {@link ArrayList} being filtered
+     * @param list the {@link ArrayList} being filtered
      * @param event the {@link Event}
      * @param <T> type of the {@link Event} - better reflection
      * @return A filtered {@link ArrayList}
      */
-    private <T extends Event> List<Method> filterArrayList(ArrayList<Method> arrayList, T event) {
-        return arrayList.stream()
+    private <T extends Event> List<Method> filterArrayList(List<Method> list, T event) {
+        return list.stream()
                 .filter(
                         it -> it.getDeclaredAnnotation(DispatcherEntry.class)
                                 .era() == event.era
