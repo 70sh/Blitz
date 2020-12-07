@@ -1,4 +1,4 @@
-package me.yagel15637.eventdispatcher;
+package me.yagel15637.eventdispatcher.modifiers;
 
 public enum EventPriority {
     HIGHEST,

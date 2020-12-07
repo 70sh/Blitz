@@ -1,4 +1,10 @@
-package me.yagel15637.eventdispatcher;
+package me.yagel15637.eventdispatcher.example;
+
+import me.yagel15637.eventdispatcher.dispatcher.DispatcherEntry;
+import me.yagel15637.eventdispatcher.event.Event;
+import me.yagel15637.eventdispatcher.dispatcher.EventDispatcher;
+import me.yagel15637.eventdispatcher.modifiers.EventEra;
+import me.yagel15637.eventdispatcher.modifiers.EventPriority;
 
 /**
  * @author Reap
@@ -18,33 +24,33 @@ public class ExampleUsage {
         dispatcher.dispatch(new Event3(EventEra.PRE));
     }
 
-    @DispatcherEntry(era = EventEra.PRE, priority = EventPriority.LOWEST)
+    @DispatcherEntry(priority = EventPriority.HIGH)
     public void onEvent1(Event1 event) {
         System.out.print("Hello ");
         event.cancel();
     }
 
-    @DispatcherEntry(era = EventEra.PRE, priority = EventPriority.HIGH)
+    @DispatcherEntry
     public void onEvent1Take2(Event1 event) {
-        System.out.println("This will not be displayed; another method that listens to Event 1 will always cancel it!");
+        System.out.println("This will not be displayed; another method that listens to Event 1 has higher priority and will always cancel it!");
     }
 
-    @DispatcherEntry(era = EventEra.POST, priority = EventPriority.MEDIUM)
+    @DispatcherEntry(era = EventEra.POST)
     public void onEvent1Post(Event1 event1) {
         System.out.println("This will not be displayed; there is no event 1 being called with EventEra set to POST.");
     }
 
-    @DispatcherEntry(era = EventEra.PRE)
+    @DispatcherEntry
     public static void onEvent2(Event2 event) {
         System.out.println("World!");
     }
 
-    @DispatcherEntry(era = EventEra.PRE)
+    @DispatcherEntry
     public static void onEvent3(Event3 event) {
         System.out.println("This will not be displayed; object main is unregistered!");
     }
 
-    @DispatcherEntry(era = EventEra.PRE)
+    @DispatcherEntry
     public static void onEventWithVariables(EventWithVariables event) {
         System.out.println(event.int1 + event.int2 + event.int3);
     }

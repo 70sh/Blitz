@@ -1,4 +1,6 @@
-package me.yagel15637.eventdispatcher;
+package me.yagel15637.eventdispatcher.dispatcher;
+
+import me.yagel15637.eventdispatcher.event.Event;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -73,7 +75,7 @@ public final class EventDispatcher {
                         it -> it.getParameterTypes()[0].isAssignableFrom(event.getClass())
                 ).sorted(
                         Comparator.comparing(
-                                it -> -it.getDeclaredAnnotation(DispatcherEntry.class).priority().ordinal()
+                                it -> it.getDeclaredAnnotation(DispatcherEntry.class).priority().ordinal()
                         )
                 )
                 .collect(Collectors.toList());

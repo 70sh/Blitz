@@ -1,4 +1,6 @@
-package me.yagel15637.eventdispatcher;
+package me.yagel15637.eventdispatcher.event;
+
+import me.yagel15637.eventdispatcher.modifiers.EventEra;
 
 public class Event {
     private boolean cancelled = false;
