@@ -12,9 +12,10 @@ import java.util.stream.Collectors;
  */
 public final class EventDispatcher {
     /**
-     * stores all registered objects and the filtered methods for them.
+     * stores all registered objects and the filtered methods for them by events.
+     * TODO find a better method for that...
      */
-    private final HashMap<Object, List<Method>> listenerMap = new HashMap<>();
+    private final HashMap<Object, HashMap<Class<? extends Event>, List<Method>>> listenerMap = new HashMap<>();
 
     /**
      * indicates whether we'll start a new thread to dispatch the event.
@@ -36,7 +37,23 @@ public final class EventDispatcher {
                                         .getSuperclass().isAssignableFrom(Event.class)
                 ).collect(Collectors.toCollection(ArrayList::new));
 
-        listenerMap.put(object, methods);
+        HashMap<Class<? extends Event>, List<Method>> filteredMethods = new HashMap<>();
+
+        for (Method method : methods) {
+            Class<? extends Event> eventClass = (Class<? extends Event>) method.getParameterTypes()[0];
+
+            List<Method> methodList = filteredMethods.containsKey(eventClass) ? filteredMethods.get(eventClass) : new ArrayList<>();
+            methodList.add(method);
+            filteredMethods.put(
+                    eventClass, methodList.stream()
+                            .filter(it -> it.getDeclaredAnnotation(DispatcherEntry.class) != null)
+                            .sorted(
+                                    Comparator.comparing(it -> it.getDeclaredAnnotation(DispatcherEntry.class).priority().ordinal())
+                            ).collect(Collectors.toList())
+            );
+        }
+
+        listenerMap.put(object, filteredMethods);
     }
 
     /**
@@ -51,16 +68,19 @@ public final class EventDispatcher {
      * @param <T> type of the event - better reflection checks
      */
     private synchronized <T extends Event> void dispatch0(T event) {
-        for (Map.Entry<Object, List<Method>> entry : listenerMap.entrySet()) {
-            for (Method m : filterArrayList(entry.getValue(), event)) {
-                invoke(m, entry.getKey(), event);
-                if (event.isCancelled()) return;
+        for (Map.Entry<Object, HashMap<Class<? extends Event>, List<Method>>> entry : listenerMap.entrySet()) {
+            if (entry.getValue().containsKey(event.getClass())) {
+                for (Method m : entry.getValue().get(event.getClass())) {
+                    invoke(m, entry.getKey(), event);
+                    if (event.isCancelled()) return;
+                }
             }
         }
     }
 
     /**
      * wrapper for {@link EventDispatcher#dispatch0(Event)} to consider {@link EventDispatcher#multiThreading}
+     * TODO fix MultiThreading.
      * @param event the event being dispatched
      * @param <T> type of the event - better reflection checks
      */
@@ -75,26 +95,5 @@ public final class EventDispatcher {
         } catch (IllegalAccessException | InvocationTargetException e) {
             e.printStackTrace();
         }
-    }
-
-    /**
-     * @param list the {@link ArrayList} being filtered
-     * @param event the {@link Event}
-     * @param <T> type of the {@link Event} - better reflection
-     * @return A filtered {@link ArrayList}
-     */
-    private <T extends Event> List<Method> filterArrayList(List<Method> list, T event) {
-        return list.stream()
-                .filter(
-                        it -> it.getDeclaredAnnotation(DispatcherEntry.class)
-                                .era() == event.era
-                ).filter(
-                        it -> it.getParameterTypes()[0].isAssignableFrom(event.getClass())
-                ).sorted(
-                        Comparator.comparing(
-                                it -> it.getDeclaredAnnotation(DispatcherEntry.class).priority().ordinal()
-                        )
-                )
-                .collect(Collectors.toList());
     }
 }

@@ -17,7 +17,7 @@ public class ExampleUsage {
     public static void main(String[] args) {
         ExampleUsage instance = new ExampleUsage();
         dispatcher.register(instance);
-        dispatcher.setMultiThreading(true);
+//        dispatcher.setMultiThreading(true);
         dispatcher.dispatch(new Event1(EventEra.PRE));
         dispatcher.dispatch(new Event2(EventEra.PRE));
         dispatcher.dispatch(new EventWithVariables(10, 20, 30, EventEra.PRE));
@@ -31,9 +31,12 @@ public class ExampleUsage {
         event.cancel();
     }
 
+    /**
+     * {@link ExampleUsage#onEvent1(Event1)} always cancels every {@link Event1} dispatched! This will never run in this example!
+     */
     @DispatcherEntry
     public void onEvent1Take2(Event1 event) {
-        System.out.println("This will not be displayed; another method that listens to Event 1 has higher priority and will always cancel it!");
+        System.out.println("This will never be printed; another method that listens to Event 1 has higher priority and will always cancel it!");
     }
 
     @DispatcherEntry(era = EventEra.POST)
@@ -51,10 +54,10 @@ public class ExampleUsage {
         System.out.println("This will not be displayed; object main is unregistered!");
     }
 
-    @DispatcherEntry
-    public static void onEventWithVariables(EventWithVariables event) {
-        System.out.println(event.int1 + event.int2 + event.int3);
-    }
+//    @DispatcherEntry
+//    public static void onEventWithVariables(EventWithVariables event) {
+//        System.out.println(event.int1 + event.int2 + event.int3);
+//    }
 
     public static class Event1 extends Event {
         public Event1(EventEra era) { super(era); }
@@ -77,5 +80,9 @@ public class ExampleUsage {
             this.int2 = int2;
             this.int3 = int3;
         }
+
+        public int getInt1() { return int1; }
+        public int getInt2() { return int2; }
+        public int getInt3() { return int3; }
     }
 }
