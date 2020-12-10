@@ -10,12 +10,14 @@ import java.util.stream.Collectors;
 /**
  * @author Reap
  */
+@SuppressWarnings({"unused", "unchecked"})
 public final class EventDispatcher {
     /**
      * stores all registered objects and the filtered methods for them by events.
      * TODO find a better method for that...
      */
     private final HashMap<Object, HashMap<Class<? extends Event>, List<Method>>> listenerMap = new HashMap<>();
+    private final HashMap<Object, HashMap<Class<? extends Event>, List<Method>>> cache = new HashMap<>();
 
     /**
      * indicates whether we'll start a new thread to dispatch the event.
@@ -29,13 +31,18 @@ public final class EventDispatcher {
      * @param object the object being registered
      */
     public void register(Object object) {
-        ArrayList<Method> methods = Arrays.stream(object.getClass().getDeclaredMethods())
+        if (cache.containsKey(object)) {
+            listenerMap.put(object, cache.get(object));
+            return;
+        }
+
+        List<Method> methods = Arrays.stream(object.getClass().getDeclaredMethods())
                 .filter(it -> it.isAnnotationPresent(DispatcherEntry.class))
                 .filter(
                         it -> it.getParameterCount() == 1 &&
                                 it.getParameterTypes()[0]
                                         .getSuperclass().isAssignableFrom(Event.class)
-                ).collect(Collectors.toCollection(ArrayList::new));
+                ).collect(Collectors.toList());
 
         HashMap<Class<? extends Event>, List<Method>> filteredMethods = new HashMap<>();
 
@@ -46,7 +53,6 @@ public final class EventDispatcher {
             methodList.add(method);
             filteredMethods.put(
                     eventClass, methodList.stream()
-                            .filter(it -> it.getDeclaredAnnotation(DispatcherEntry.class) != null)
                             .sorted(
                                     Comparator.comparing(it -> it.getDeclaredAnnotation(DispatcherEntry.class).priority().ordinal())
                             ).collect(Collectors.toList())
@@ -54,6 +60,7 @@ public final class EventDispatcher {
         }
 
         listenerMap.put(object, filteredMethods);
+        cache.put(object, filteredMethods);
     }
 
     /**

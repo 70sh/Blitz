@@ -11,7 +11,7 @@ import me.yagel15637.eventdispatcher.modifiers.EventPriority;
  *
  * good example for using EventDispatcher
  */
-public class ExampleUsage {
+public final class ExampleUsage {
     public static EventDispatcher dispatcher = new EventDispatcher();
 
     public static void main(String[] args) {
@@ -23,6 +23,7 @@ public class ExampleUsage {
         dispatcher.dispatch(new EventWithVariables(10, 20, 30, EventEra.PRE));
         dispatcher.unregister(instance);
         dispatcher.dispatch(new Event3(EventEra.PRE));
+        dispatcher.register(instance);
     }
 
     @DispatcherEntry(priority = EventPriority.HIGH)
