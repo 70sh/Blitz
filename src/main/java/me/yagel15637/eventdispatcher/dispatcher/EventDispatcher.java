@@ -14,9 +14,13 @@ import java.util.stream.Collectors;
 public final class EventDispatcher {
     /**
      * stores all registered objects and the filtered methods for them by events.
-     * TODO find a better method for that...
      */
     private final HashMap<Object, HashMap<Class<? extends Event>, List<Method>>> listenerMap = new HashMap<>();
+
+    /**
+     * the cached object hash maps, to optimize re-registering objects. we will attempt to use the cache first when registering,
+     * if it does not include the linked object we will filter the listeners and put them in the listenerMap and the cache both.
+     */
     private final HashMap<Object, HashMap<Class<? extends Event>, List<Method>>> cache = new HashMap<>();
 
     /**
@@ -101,14 +105,12 @@ public final class EventDispatcher {
      * @param m the method to invoke
      * @param object the object the method is extracted from
      * @param args the arguments for the method
-     * @return the result of the method
      */
-    private Object invoke(Method m, Object object, Object... args) {
+    private void invoke(Method m, Object object, Object... args) {
         try {
-            return m.invoke(object, args);
+            m.invoke(object, args);
         } catch (IllegalAccessException | InvocationTargetException e) {
             e.printStackTrace();
-            return null;
         }
     }
 }
