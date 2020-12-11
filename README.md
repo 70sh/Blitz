@@ -19,5 +19,5 @@ dependencies {
     - Send a Pull Request when you want to merge your changes!
     
 #### Special Thanks to:
-    - *cats* (https://github.com/cahts) for code review and improvement suggestions
+    - *cats* (https://github.com/vialdevelopment) for code review and improvement suggestions
     - *ollie* (https://github.com/olliem5) for using this in his products and in that, testing the project
