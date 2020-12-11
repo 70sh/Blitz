@@ -1,6 +1,6 @@
-package me.yagel15637.eventdispatcher.event;
+package me.yagel15637.blitz.event;
 
-import me.yagel15637.eventdispatcher.modifiers.EventEra;
+import me.yagel15637.blitz.modifiers.EventEra;
 
 /**
  * @author Reap

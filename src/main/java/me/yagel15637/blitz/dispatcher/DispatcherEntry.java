@@ -1,7 +1,7 @@
-package me.yagel15637.eventdispatcher.dispatcher;
+package me.yagel15637.blitz.dispatcher;
 
-import me.yagel15637.eventdispatcher.modifiers.EventEra;
-import me.yagel15637.eventdispatcher.modifiers.EventPriority;
+import me.yagel15637.blitz.modifiers.EventEra;
+import me.yagel15637.blitz.modifiers.EventPriority;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

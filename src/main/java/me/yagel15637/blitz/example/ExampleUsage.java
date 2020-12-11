@@ -1,10 +1,10 @@
-package me.yagel15637.eventdispatcher.example;
+package me.yagel15637.blitz.example;
 
-import me.yagel15637.eventdispatcher.dispatcher.DispatcherEntry;
-import me.yagel15637.eventdispatcher.event.Event;
-import me.yagel15637.eventdispatcher.dispatcher.EventDispatcher;
-import me.yagel15637.eventdispatcher.modifiers.EventEra;
-import me.yagel15637.eventdispatcher.modifiers.EventPriority;
+import me.yagel15637.blitz.dispatcher.DispatcherEntry;
+import me.yagel15637.blitz.event.Event;
+import me.yagel15637.blitz.dispatcher.EventDispatcher;
+import me.yagel15637.blitz.modifiers.EventEra;
+import me.yagel15637.blitz.modifiers.EventPriority;
 
 /**
  * @author Reap

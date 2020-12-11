@@ -1,6 +1,6 @@
-package me.yagel15637.eventdispatcher.dispatcher;
+package me.yagel15637.blitz.dispatcher;
 
-import me.yagel15637.eventdispatcher.event.Event;
+import me.yagel15637.blitz.event.Event;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
