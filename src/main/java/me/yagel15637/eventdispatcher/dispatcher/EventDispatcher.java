@@ -70,7 +70,7 @@ public final class EventDispatcher {
     public void unregister(Object object) { listenerMap.remove(object); }
 
     /**
-     * dispatches an {@link Event}, PRE then POST
+     * dispatches an {@link Event}
      * @param event the event being dispatched
      * @param <T> type of the event - better reflection checks
      */
@@ -96,11 +96,19 @@ public final class EventDispatcher {
         else dispatch0(event);
     }
 
-    private void invoke(Method m, Object caller, Object... args) {
+    /**
+     * invokes an event so we don't have to put try catch out where it is
+     * @param m the method to invoke
+     * @param object the object the method is extracted from
+     * @param args the arguments for the method
+     * @return the result of the method
+     */
+    private Object invoke(Method m, Object object, Object... args) {
         try {
-            m.invoke(caller, args);
+            return m.invoke(object, args);
         } catch (IllegalAccessException | InvocationTargetException e) {
             e.printStackTrace();
+            return null;
         }
     }
 }
