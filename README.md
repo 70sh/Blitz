@@ -14,10 +14,10 @@ dependencies {
 
 ### Contributing:
     - Make your own fork
-    - ```git clone https://github.com/YOUR_NAME/blitz.git```
+    - git clone https://github.com/YOUR_NAME/blitz.git`
     - Push updates to your fork
     - Send a Pull Request when you want to merge your changes!
     
 #### Special Thanks to:
-    - [cats](https://github.com/cahts) for code review and improvement suggestions
-    - [ollie](https://github.com/olliem5) for using this in his products and in that, testing the project
+    - *cats* (https://github.com/cahts) for code review and improvement suggestions
+    - *ollie* (https://github.com/olliem5) for using this in his products and in that, testing the project
