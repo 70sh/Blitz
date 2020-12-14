@@ -1,6 +1,6 @@
-package me.yagel15637.blitz.dispatcher;
+package club.cafedevelopment.blitz.dispatcher;
 
-import me.yagel15637.blitz.event.Event;
+import club.cafedevelopment.blitz.event.Event;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -58,7 +58,7 @@ public final class EventDispatcher {
             filteredMethods.put(
                     eventClass, methodList.stream()
                             .sorted(
-                                    Comparator.comparing(it -> it.getDeclaredAnnotation(DispatcherEntry.class).priority().ordinal())
+                                    Comparator.comparing(it -> -it.getDeclaredAnnotation(DispatcherEntry.class).priority())
                             ).collect(Collectors.toList())
             );
         }
@@ -81,7 +81,9 @@ public final class EventDispatcher {
     private synchronized <T extends Event> void dispatch0(T event) {
         for (Map.Entry<Object, HashMap<Class<? extends Event>, List<Method>>> entry : listenerMap.entrySet()) {
             if (entry.getValue().containsKey(event.getClass())) {
-                for (Method m : entry.getValue().get(event.getClass())) {
+                for (Method m : entry.getValue().get(event.getClass())
+                        .stream()
+                        .filter(it -> it.getDeclaredAnnotation(DispatcherEntry.class).era() == event.era).collect(Collectors.toList())) {
                     invoke(m, entry.getKey(), event);
                     if (event.isCancelled()) return;
                 }

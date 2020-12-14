@@ -1,6 +1,6 @@
-package me.yagel15637.blitz.event;
+package club.cafedevelopment.blitz.event;
 
-import me.yagel15637.blitz.modifiers.EventEra;
+import club.cafedevelopment.blitz.modifiers.EventEra;
 
 /**
  * @author Reap

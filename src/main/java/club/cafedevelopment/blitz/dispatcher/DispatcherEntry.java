@@ -1,7 +1,6 @@
-package me.yagel15637.blitz.dispatcher;
+package club.cafedevelopment.blitz.dispatcher;
 
-import me.yagel15637.blitz.modifiers.EventEra;
-import me.yagel15637.blitz.modifiers.EventPriority;
+import club.cafedevelopment.blitz.modifiers.EventEra;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -22,5 +21,5 @@ public @interface DispatcherEntry {
     /**
      * @return the listener's priority
      */
-    EventPriority priority() default EventPriority.MEDIUM;
+    int priority() default 500000;
 }

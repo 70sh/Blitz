@@ -1,10 +1,9 @@
-package me.yagel15637.blitz.example;
+package club.cafedevelopment.blitz.example;
 
-import me.yagel15637.blitz.dispatcher.DispatcherEntry;
-import me.yagel15637.blitz.event.Event;
-import me.yagel15637.blitz.dispatcher.EventDispatcher;
-import me.yagel15637.blitz.modifiers.EventEra;
-import me.yagel15637.blitz.modifiers.EventPriority;
+import club.cafedevelopment.blitz.event.Event;
+import club.cafedevelopment.blitz.dispatcher.DispatcherEntry;
+import club.cafedevelopment.blitz.dispatcher.EventDispatcher;
+import club.cafedevelopment.blitz.modifiers.EventEra;
 
 /**
  * @author Reap
@@ -26,7 +25,7 @@ public final class ExampleUsage {
         dispatcher.register(instance);
     }
 
-    @DispatcherEntry(priority = EventPriority.HIGH)
+    @DispatcherEntry
     public void onEvent1(Event1 event) {
         System.out.print("Hello ");
         event.cancel();
@@ -35,7 +34,7 @@ public final class ExampleUsage {
     /**
      * {@link ExampleUsage#onEvent1(Event1)} always cancels every {@link Event1} dispatched! This will never run in this example!
      */
-    @DispatcherEntry
+    @DispatcherEntry(priority = 1)
     public void onEvent1Take2(Event1 event) {
         System.out.println("This will never be printed; another method that listens to Event 1 has higher priority and will always cancel it!");
     }
@@ -52,7 +51,7 @@ public final class ExampleUsage {
 
     @DispatcherEntry
     public static void onEvent3(Event3 event) {
-        System.out.println("This will not be displayed; object main is unregistered!");
+        System.out.println("This will not be displayed; object instance is unregistered!");
     }
 
 //    @DispatcherEntry
