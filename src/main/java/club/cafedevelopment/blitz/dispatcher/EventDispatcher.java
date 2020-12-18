@@ -2,6 +2,7 @@ package club.cafedevelopment.blitz.dispatcher;
 
 import club.cafedevelopment.blitz.event.Event;
 
+import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
@@ -12,6 +13,18 @@ import java.util.stream.Collectors;
  */
 @SuppressWarnings({"unused", "unchecked"})
 public final class EventDispatcher {
+    /**
+     * determines whether to send debug messages to the {@link #stream} or not
+     */
+    public boolean DEBUG = false;
+
+    /**
+     * the {@link PrintStream} we are debugging onto; is {@link System#out} by default
+     */
+    private PrintStream stream = System.out;
+    public void setDebugStream(PrintStream stream) { this.stream = stream; }
+    public PrintStream getDebugStream() { return stream; }
+
     /**
      * stores all registered objects and the filtered methods for them by events.
      */
@@ -37,6 +50,7 @@ public final class EventDispatcher {
     public void register(Object object) {
         if (cache.containsKey(object)) {
             listenerMap.put(object, cache.get(object));
+            if (DEBUG) stream.println("Registered " + object + " from the cache.");
             return;
         }
 
@@ -64,14 +78,22 @@ public final class EventDispatcher {
         }
 
         listenerMap.put(object, filteredMethods);
-        cache.put(object, filteredMethods);
+        if (DEBUG) stream.println("Registered " + object + " for the first time.");
     }
 
     /**
-     * removes an object and all it's listeners from {@link EventDispatcher#listenerMap}
+     * removes an object and all it's listeners from {@link EventDispatcher#listenerMap}, also will put the object's listeners in the cache if it is not present.
      * @param object the object being removed
      */
-    public void unregister(Object object) { listenerMap.remove(object); }
+    public void unregister(Object object) {
+        if (!cache.containsKey(object)) {
+            cache.put(object, listenerMap.get(object));
+            if (DEBUG) stream.println("Unregistered " + object + " for the first time and put it's listeners in the cache.");
+        }
+
+        listenerMap.remove(object);
+        if (DEBUG) stream.println("Unregistered " + object);
+    }
 
     /**
      * dispatches an {@link Event}
@@ -85,10 +107,13 @@ public final class EventDispatcher {
                         .stream()
                         .filter(it -> it.getDeclaredAnnotation(DispatcherEntry.class).era() == event.era).collect(Collectors.toList())) {
                     invoke(m, entry.getKey(), event);
+                    if (DEBUG) stream.println("Invoked " + event + " on Method " + m);
                     if (event.isCancelled()) return;
                 }
             }
         }
+
+        if (DEBUG) stream.println("Finished dispatching " + event);
     }
 
     /**
