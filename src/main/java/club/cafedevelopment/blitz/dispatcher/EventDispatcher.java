@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 @SuppressWarnings({"unused", "unchecked"})
 public final class EventDispatcher {
     /**
-     * determines whether to send debug messages to the {@link #stream} or not
+     * determines whether to send debug messages to the {@link #stream} or not; is {@link Boolean#FALSE} by default
      */
     private boolean debug = false;
     public void setDebugging(boolean debug) { this.debug = debug; }
@@ -111,7 +111,11 @@ public final class EventDispatcher {
                         .stream()
                         .filter(it -> it.getDeclaredAnnotation(DispatcherEntry.class).era() == event.era)
                         .collect(Collectors.toList())) {
-                    invoke(m, entry.getKey(), event);
+                    try {
+                        m.invoke(entry.getKey(), event);
+                    } catch (IllegalAccessException | InvocationTargetException e) {
+                        if (debug) stream.println(e.getMessage());
+                    }
                     if (debug) stream.println("Invoked " + event + " on Method " + m + " from Thread " + Thread.currentThread());
                     if (event.isCancelled()) return;
                 }
@@ -121,6 +125,9 @@ public final class EventDispatcher {
         if (debug) stream.println("Finished dispatching " + event);
     }
 
+    /**
+     * Thread Group for Multithreading.
+     */
     private final ExecutorService service = Executors.newFixedThreadPool(5);
     public void shutdown() { service.shutdown(); }
 
@@ -132,19 +139,5 @@ public final class EventDispatcher {
     public <T extends Event> void dispatch(T event) {
         if (multiThreading) service.submit(() -> dispatch0(event));
         else dispatch0(event);
-    }
-
-    /**
-     * invokes an event so we don't have to put try catch out where it is
-     * @param m the method to invoke
-     * @param object the object the method is extracted from
-     * @param args the arguments for the method
-     */
-    private void invoke(Method m, Object object, Object... args) {
-        try {
-            m.invoke(object, args);
-        } catch (IllegalAccessException | InvocationTargetException e) {
-            e.printStackTrace();
-        }
     }
 }
