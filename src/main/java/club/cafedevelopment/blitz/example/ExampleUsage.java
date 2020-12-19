@@ -16,13 +16,14 @@ public final class ExampleUsage {
     public static void main(String[] args) {
         ExampleUsage instance = new ExampleUsage();
         dispatcher.register(instance);
-//        dispatcher.setMultiThreading(true);
+        dispatcher.setMultiThreading(true);
         dispatcher.dispatch(new Event1(EventEra.PRE));
         dispatcher.dispatch(new Event2(EventEra.PRE));
         dispatcher.dispatch(new EventWithVariables(10, 20, 30, EventEra.PRE));
         dispatcher.unregister(instance);
         dispatcher.dispatch(new Event3(EventEra.PRE));
         dispatcher.register(instance);
+        dispatcher.shutdown();
     }
 
     @DispatcherEntry
@@ -54,10 +55,10 @@ public final class ExampleUsage {
         System.out.println("This will not be displayed; object instance is unregistered!");
     }
 
-//    @DispatcherEntry
-//    public static void onEventWithVariables(EventWithVariables event) {
-//        System.out.println(event.int1 + event.int2 + event.int3);
-//    }
+    @DispatcherEntry
+    public static void onEventWithVariables(EventWithVariables event) {
+        System.out.println(event.getInt1() + event.getInt2() + event.getInt3());
+    }
 
     public static class Event1 extends Event {
         public Event1(EventEra era) { super(era); }
