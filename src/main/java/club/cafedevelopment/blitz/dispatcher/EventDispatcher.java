@@ -107,7 +107,7 @@ public final class EventDispatcher {
      * @param object the object being removed
      */
     public void unregister(Object object) {
-        if (!cache.containsKey(object)) {
+        if (caching && !cache.containsKey(object)) {
             cache.put(object, listenerMap.get(object));
             if (debug) stream.println("Unregistered " + object + " and put it's listeners in the cache.");
         }
