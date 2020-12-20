@@ -16,14 +16,35 @@ import java.util.stream.Collectors;
 @SuppressWarnings({"unused", "unchecked"})
 public final class EventDispatcher {
     /**
-     * determines whether to send debug messages to the {@link #stream} or not; is {@link Boolean#FALSE} by default
+     * determines whether to send debug messages to the {@link #stream} or not; is {@link Boolean#FALSE} by default.
      */
     private boolean debug = false;
     public void setDebugging(boolean debug) { this.debug = debug; }
     public boolean isDebugging() { return debug; }
 
     /**
-     * the {@link PrintStream} we are debugging onto; is {@link System#out} by default
+     * indicates whether we'll cache objects after unregistering them or not; is {@link Boolean#TRUE} by default.
+     */
+    private boolean caching = true;
+    public void setCaching(boolean caching) { this.caching = caching; }
+    public boolean isCaching() { return caching; }
+
+    /**
+     * indicates whether we'll remove objects from the cache after registering them or not; is {@link Boolean#TRUE} by default;
+     */
+    private boolean compactCaching = true;
+    public void setCompactCaching(boolean compactCaching) { this.compactCaching = compactCaching; }
+    public boolean isCompactCaching() { return compactCaching; }
+
+    /**
+     * indicates whether we'll start a new thread to dispatch the event; is {@link Boolean#TRUE} by default.
+     */
+    private boolean multiThreading = false;
+    public boolean isMultithreading() { return multiThreading; }
+    public void setMultiThreading(boolean multiThreading) { this.multiThreading = multiThreading; }
+
+    /**
+     * the {@link PrintStream} we are debugging onto; is {@link System#out} by default.
      */
     private PrintStream stream = System.out;
     public void setDebugStream(PrintStream stream) { this.stream = stream; }
@@ -33,27 +54,23 @@ public final class EventDispatcher {
      * stores all registered objects and the filtered methods for them by events.
      */
     private final HashMap<Object, HashMap<Class<? extends Event>, List<Method>>> listenerMap = new HashMap<>();
+    public HashMap<Object, HashMap<Class<? extends Event>, List<Method>>> getListenerMap() { return listenerMap; }
 
     /**
      * the cached object hash maps, to optimize re-registering objects. we will attempt to use the cache first when registering,
      * if it does not include the linked object we will filter the listeners and put them in the listenerMap and the cache both.
      */
     private final HashMap<Object, HashMap<Class<? extends Event>, List<Method>>> cache = new HashMap<>();
-
-    /**
-     * indicates whether we'll start a new thread to dispatch the event.
-     */
-    private boolean multiThreading = false;
-    public boolean isMultithreading() { return multiThreading; }
-    public void setMultiThreading(boolean multiThreading) { this.multiThreading = multiThreading; }
+    public HashMap<Object, HashMap<Class<? extends Event>, List<Method>>> getCache() { return cache; }
 
     /**
      * looks through all the object's methods, and stores all event listeners under object in {@link EventDispatcher#listenerMap}
      * @param object the object being registered
      */
     public void register(Object object) {
-        if (cache.containsKey(object)) {
+        if (caching && cache.containsKey(object)) {
             listenerMap.put(object, cache.get(object));
+            if (compactCaching) cache.remove(object);
             if (debug) stream.println("Registered " + object + " from the cache.");
             return;
         }
@@ -92,7 +109,7 @@ public final class EventDispatcher {
     public void unregister(Object object) {
         if (!cache.containsKey(object)) {
             cache.put(object, listenerMap.get(object));
-            if (debug) stream.println("Unregistered " + object + " for the first time and put it's listeners in the cache.");
+            if (debug) stream.println("Unregistered " + object + " and put it's listeners in the cache.");
         }
 
         listenerMap.remove(object);
