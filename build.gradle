@@ -14,5 +14,6 @@ dependencies {
 }
 
 jar {
-    exclude 'club/cafedevelopment/blitz/example'
+    exclude 'club/cafedevelopment/blitz/example' // We do not want the Example class to be included in the release!
+    exclude 'club/cafedevelopment/blitz/testing' // It is advised to make testing classes and make them in this package, Pull Requests with untested code and testing classes alike will not be merged.
 }

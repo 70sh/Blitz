@@ -16,7 +16,7 @@ public final class ExampleUsage {
     public static void main(String[] args) {
         ExampleUsage instance = new ExampleUsage();
         dispatcher.register(instance);
-        dispatcher.setMultiThreading(true);
+//        dispatcher.setMultiThreading(true);
         dispatcher.dispatch(new Event1(EventEra.PRE));
         dispatcher.dispatch(new Event2(EventEra.PRE));
         dispatcher.dispatch(new EventWithVariables(10, 20, 30, EventEra.PRE));
@@ -26,16 +26,16 @@ public final class ExampleUsage {
         dispatcher.shutdown();
     }
 
-    @DispatcherEntry
+    @DispatcherEntry(priority = 1)
     public void onEvent1(Event1 event) {
         System.out.print("Hello ");
         event.cancel();
     }
 
     /**
-     * {@link ExampleUsage#onEvent1(Event1)} always cancels every {@link Event1} dispatched! This will never run in this example!
+     * {@link #onEvent1(Event1)} always cancels every {@link Event1} dispatched! This method will never be called in this example!
      */
-    @DispatcherEntry(priority = 1)
+    @DispatcherEntry
     public void onEvent1Take2(Event1 event) {
         System.out.println("This will never be printed; another method that listens to Event 1 has higher priority and will always cancel it!");
     }

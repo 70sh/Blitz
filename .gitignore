@@ -1,5 +1,5 @@
-.idea/
-.gradle/
-.circleci/
-build/
-src/main/java/club/cafedevelopment/blitz/testing
+/.idea/
+/.gradle/
+/.circleci/
+/build/
+/src/main/java/club/cafedevelopment/blitz/testing
