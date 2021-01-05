@@ -8,24 +8,36 @@ import club.cafedevelopment.blitz.modifiers.EventEra;
 /**
  * @author Reap
  *
- * good example for using EventDispatcher
+ * A good example for using Blitz.
  */
 public final class ExampleUsage {
+    /*
+    * Declaring a Dispatcher.
+    *
+    * Alternatively: dispatcher = EventDispatcher.getSystemEventDispatcher();
+    */
     public static EventDispatcher dispatcher = new EventDispatcher();
 
     public static void main(String[] args) {
+        // Create a new instance of the object you want to use; you can use an already existing one.
         ExampleUsage instance = new ExampleUsage();
+
+        // Register an instance.
         dispatcher.register(instance);
-//        dispatcher.setMultiThreading(true);
+
+        // Dispatch events.
         dispatcher.dispatch(new Event1(EventEra.PRE));
         dispatcher.dispatch(new Event2(EventEra.PRE));
         dispatcher.dispatch(new EventWithVariables(10, 20, 30, EventEra.PRE));
+
+        // Unregister an instance.
         dispatcher.unregister(instance);
         dispatcher.dispatch(new Event3(EventEra.PRE));
         dispatcher.register(instance);
         dispatcher.shutdown();
     }
 
+    // An event listener with updated priority.
     @DispatcherEntry(priority = 1)
     public void onEvent1(Event1 event) {
         System.out.print("Hello ");
@@ -35,11 +47,13 @@ public final class ExampleUsage {
     /**
      * {@link #onEvent1(Event1)} always cancels every {@link Event1} dispatched! This method will never be called in this example!
      */
+    // An event listener with default config (era = EventEra.PRE, priority = 0).
     @DispatcherEntry
     public void onEvent1Take2(Event1 event) {
         System.out.println("This will never be printed; another method that listens to Event 1 has higher priority and will always cancel it!");
     }
 
+    // An event with updated era.
     @DispatcherEntry(era = EventEra.POST)
     public void onEvent1Post(Event1 event1) {
         System.out.println("This will not be displayed; there is no event 1 being called with EventEra set to POST.");
