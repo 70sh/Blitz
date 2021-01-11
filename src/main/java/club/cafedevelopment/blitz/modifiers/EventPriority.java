@@ -2,8 +2,9 @@ package club.cafedevelopment.blitz.modifiers;
 
 /**
  * @author Reap
- * constants for priorities, although it is advised to use normal {@link Integer}s instead for more customizability.
+ * constant priorities aiming for backwards compatibility for before 3.0, although it is advised to use normal {@link Integer}s instead for more customizability. Is marked as {@link Deprecated} to have people switch to normal Integers instead.
  */
+@Deprecated @SuppressWarnings("unused")
 public final class EventPriority {
     public static final int HIGHEST = Integer.MAX_VALUE;
     public static final int HIGH = Integer.MAX_VALUE / 2;

@@ -3,3 +3,4 @@
 /.circleci/
 /build/
 /src/main/java/club/cafedevelopment/blitz/testing
+# ^ is there for contributors who wish to have testing classes as neither untested code or code including testing classes will be merged.

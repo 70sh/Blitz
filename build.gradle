@@ -6,14 +6,9 @@ group 'club.cafedevelopment.blitz'
 version '3.0-SNAPSHOT'
 
 repositories {
-    mavenCentral()
+    mavenCentral() // We take JUnit from here.
 }
 
 dependencies {
-    testCompile group: 'junit', name: 'junit', version: '4.12'
-}
-
-jar {
-    exclude 'club/cafedevelopment/blitz/example' // We do not want the Example class to be included in the release!
-    exclude 'club/cafedevelopment/blitz/testing' // It is advised to make testing classes and make them in this package, Pull Requests with untested code and testing classes alike will not be merged.
+    testCompile 'junit:junit:4.12' // JUnit.
 }

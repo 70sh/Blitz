@@ -16,25 +16,41 @@ import java.util.stream.Collectors;
 @SuppressWarnings({"unused", "unchecked"})
 public final class EventDispatcher {
     /**
+     * A public Event Dispatcher for the program.
+     * TODO: Make a system-wide event dispatcher, and global events.
+     */
+    private static final EventDispatcher SYSTEM_EVENT_DISPATCHER = new EventDispatcher();
+    public static EventDispatcher getSystemEventDispatcher() { return SYSTEM_EVENT_DISPATCHER; }
+
+    /**
      * determines whether to send debug messages to the {@link #stream} or not; is {@link Boolean#FALSE} by default.
      */
     private boolean debug = false;
-    public void setDebugging(boolean debug) { this.debug = debug; }
     public boolean isDebugging() { return debug; }
+    public void setDebugging(boolean debug) { this.debug = debug; }
 
     /**
      * indicates whether we'll cache objects after unregistering them or not; is {@link Boolean#TRUE} by default.
      */
     private boolean caching = true;
-    public void setCaching(boolean caching) { this.caching = caching; }
     public boolean isCaching() { return caching; }
+    public void setCaching(boolean caching) { this.caching = caching; }
 
     /**
-     * indicates whether we'll remove objects from the cache after registering them or not; is {@link Boolean#TRUE} by default;
+     * indicates whether we'll remove objects from the cache after registering them or not; is {@link Boolean#TRUE} by default.
      */
     private boolean compactCaching = true;
-    public void setCompactCaching(boolean compactCaching) { this.compactCaching = compactCaching; }
     public boolean isCompactCaching() { return compactCaching; }
+    public void setCompactCaching(boolean compactCaching) { this.compactCaching = compactCaching; }
+
+    /**
+     * determines whether events should get sent to the system event dispatcher.
+     */
+    private boolean dispatchToSystemDispatcher = false;
+    public boolean isDispatchToSystemDispatcher() { return dispatchToSystemDispatcher; }
+    public void setDispatchToSystemDispatcher(boolean dispatchToSystemDispatcher) {
+        this.dispatchToSystemDispatcher = dispatchToSystemDispatcher;
+    }
 
     /**
      * indicates whether we'll start a new thread to dispatch the event; is {@link Boolean#TRUE} by default.
@@ -47,8 +63,8 @@ public final class EventDispatcher {
      * the {@link PrintStream} we are debugging onto; is {@link System#out} by default.
      */
     private PrintStream stream = System.out;
-    public void setDebugStream(PrintStream stream) { this.stream = stream; }
-    public PrintStream getDebugStream() { return stream; }
+    public PrintStream getStream() { return stream; }
+    public void setStream(PrintStream stream) { this.stream = stream; }
 
     /**
      * stores all registered objects and the filtered methods for them by events.
@@ -70,17 +86,18 @@ public final class EventDispatcher {
     public void register(Object object) {
         if (caching && cache.containsKey(object)) {
             listenerMap.put(object, cache.get(object));
-            if (compactCaching) cache.remove(object);
-            if (debug) stream.println("Registered " + object + " from the cache.");
+            if (compactCaching) {
+                cache.remove(object);
+                if (debug) stream.println("[Blitz] Registered " + object + " from the cache and cleared it. (compactCaching=true)");
+            } else if (debug) stream.println("[Blitz] Registered " + object + " from the cache. (compactCaching=false)");
             return;
         }
 
         List<Method> methods = Arrays.stream(object.getClass().getDeclaredMethods())
                 .filter(it -> it.isAnnotationPresent(DispatcherEntry.class))
-                .filter(
-                        it -> it.getParameterCount() == 1 &&
-                                it.getParameterTypes()[0]
-                                        .getSuperclass().isAssignableFrom(Event.class)
+                .filter(it ->
+                        it.getParameterCount() == 1 &&
+                        it.getParameterTypes()[0].getSuperclass().isAssignableFrom(Event.class)
                 ).collect(Collectors.toList());
 
         HashMap<Class<? extends Event>, List<Method>> filteredMethods = new HashMap<>();
@@ -90,16 +107,15 @@ public final class EventDispatcher {
 
             List<Method> methodList = filteredMethods.containsKey(eventClass) ? filteredMethods.get(eventClass) : new ArrayList<>();
             methodList.add(method);
-            filteredMethods.put(
-                    eventClass, methodList.stream()
-                            .sorted(
-                                    Comparator.comparing(it -> -it.getDeclaredAnnotation(DispatcherEntry.class).priority())
-                            ).collect(Collectors.toList())
+            filteredMethods.put(eventClass,
+                    methodList.stream()
+                            .sorted(Comparator.comparing(it -> -it.getDeclaredAnnotation(DispatcherEntry.class).priority()))
+                            .collect(Collectors.toList())
             );
         }
 
         listenerMap.put(object, filteredMethods);
-        if (debug) stream.println("Registered " + object + " for the first time.");
+        if (debug) stream.println("[Blitz] Registered " + object + " for the first time.");
     }
 
     /**
@@ -109,11 +125,11 @@ public final class EventDispatcher {
     public void unregister(Object object) {
         if (caching && !cache.containsKey(object)) {
             cache.put(object, listenerMap.get(object));
-            if (debug) stream.println("Unregistered " + object + " and put it's listeners in the cache.");
+            if (debug) stream.println("[Blitz] Unregistered " + object + " and put it's listeners in the cache.");
         }
 
         listenerMap.remove(object);
-        if (debug) stream.println("Unregistered " + object);
+        if (debug) stream.println("[Blitz] Unregistered " + object);
     }
 
     /**
@@ -129,17 +145,17 @@ public final class EventDispatcher {
                         .filter(it -> it.getDeclaredAnnotation(DispatcherEntry.class).era() == event.era)
                         .collect(Collectors.toList())) {
                     try {
-                        m.invoke(entry.getKey(), event);
+                        if (listenerMap.containsKey(entry.getKey())) m.invoke(entry.getKey(), event);
                     } catch (IllegalAccessException | InvocationTargetException e) {
                         if (debug) stream.println(e.getMessage());
                     }
-                    if (debug) stream.println("Invoked " + event + " on Method " + m + " from Thread " + Thread.currentThread());
+                    if (debug) stream.println("[Blitz] Invoked " + event + " on Method " + m + " from Thread " + Thread.currentThread());
                     if (event.isCancelled()) return;
                 }
             }
         }
 
-        if (debug) stream.println("Finished dispatching " + event);
+        if (debug) stream.println("[Blitz] Finished dispatching " + event);
     }
 
     /**
@@ -156,5 +172,25 @@ public final class EventDispatcher {
     public <T extends Event> void dispatch(T event) {
         if (multiThreading) service.submit(() -> dispatch0(event));
         else dispatch0(event);
+
+        if (dispatchToSystemDispatcher && this != SYSTEM_EVENT_DISPATCHER) service.submit(() -> dispatch0(event));
+    }
+
+    /**
+     * Overrides {@link Object#clone()} to have the new EventDispatcher use a different Thread Pool to not flood this one.
+     * @return a new EventDispatcher with all the properties of this one, using a new Thread Pool.
+     */
+    @SuppressWarnings("all")
+    @Override public EventDispatcher clone() {
+        EventDispatcher clone = new EventDispatcher();
+        clone.setDebugging(debug);
+        clone.setCaching(caching);
+        clone.setCompactCaching(compactCaching);
+        clone.setDispatchToSystemDispatcher(dispatchToSystemDispatcher);
+        clone.setMultiThreading(multiThreading);
+        clone.setStream(stream);
+        clone.getListenerMap().putAll(listenerMap);
+        clone.getCache().putAll(cache);
+        return clone;
     }
 }
