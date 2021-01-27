@@ -8,10 +8,7 @@ repositories {
     maven { url = 'https://jitpack.io' }
 }
 dependencies { 
-    implementation 'com.github.CafeDevelopment:Blitz:VERSION' {
-        // If you aren't using Reflections in your project, comment this out:
-        exclude group: 'org.relections'
-    }
+    implementation 'com.github.CafeDevelopment:Blitz:VERSION'
 }
 ```
 
